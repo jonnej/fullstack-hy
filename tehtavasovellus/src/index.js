@@ -1,66 +1,57 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
+import Kurssi from './components/kurssi.js'
 
-const Otsikko = (props) => {
-    return (
-        <div>
-            <h1>{props.kurssi}</h1>
-        </div>
-    )
-}
-
-const Osa = (props) => {
-    return (
-        <div>
-            <p>{props.nimi} {props.tehtavia}</p>
-        </div>
-    )
-}
-
-const Sisalto = (props) => {
-    const osat = props.osat
-    return (
-        <div>
-            <Osa nimi={osat[0].nimi} tehtavia={osat[0].tehtavia}/>
-            <Osa nimi={osat[1].nimi} tehtavia={osat[1].tehtavia}/>
-            <Osa nimi={osat[2].nimi} tehtavia={osat[2].tehtavia}/>
-        </div>
-    )
-}
-
-const Yhteensa = (props) => {
-    const osat = props.osat
-    return (
-        <div>
-            <p>yhteensä {osat[0].tehtavia + osat[1].tehtavia + osat[2].tehtavia} tehtävää</p>
-        </div>
-    )
-}
 
 const App = () => {
-    const kurssi = {
-      nimi: 'Half Stack -sovelluskehitys',
-      osat: [
+    const kurssit = [
         {
-          nimi: 'Reactin perusteet',
-          tehtavia: 10
+            nimi: 'Half Stack -sovelluskehitys',
+            id: 1,
+            osat: [
+                {
+                    nimi: 'Reactin perusteet',
+                    tehtavia: 10,
+                    id: 1
+                },
+                {
+                    nimi: 'Tiedonvälitys propseilla',
+                    tehtavia: 7,
+                    id: 2
+                },
+                {
+                    nimi: 'Komponenttien tila',
+                    tehtavia: 14,
+                    id: 3
+                },
+                {
+                    nimi: 'Destrukturointia vaiko ei',
+                    tehtavia: 5,
+                    id: 4
+                }
+            ]
         },
         {
-          nimi: 'Tiedonvälitys propseilla',
-          tehtavia: 7
-        },
-        {
-          nimi: 'Komponenttien tila',
-          tehtavia: 14
+            nimi: 'Node.js',
+            id: 2,
+            osat: [
+                {
+                    nimi: 'Routing',
+                    tehtavia: 3,
+                    id: 1
+                },
+                {
+                    nimi: 'Middlewaret',
+                    tehtavia: 7,
+                    id: 2
+                }
+            ]
         }
-      ]
-    }
+    ]
 
     return (
         <div>
-            <Otsikko kurssi={kurssi.nimi} />
-            <Sisalto osat={kurssi.osat} />
-            <Yhteensa osat={kurssi.osat} />
+            <Kurssi kurssit={kurssit} />
         </div>
     )
 }
