@@ -1,0 +1,9 @@
+POST http://localhost:3003/api/blogs/
+content-type: application/json
+
+{
+    "title": "Toimintavarmuutta",
+    "author": "Jonnej",
+    "url": "www.google.fi",
+    "likes": 10
+}
