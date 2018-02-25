@@ -1,0 +1,9 @@
+PUT http://localhost:3001/api/blogs/5a8e6cc736ff22ad2f
+content-type: application/json
+
+{
+    "title": "Toimivat päivitykset on jees",
+    "author": "jonnej",
+    "url": "yle.fi/toimii",
+    "likes": 9999
+}

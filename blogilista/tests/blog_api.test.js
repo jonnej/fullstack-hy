@@ -2,57 +2,9 @@ const supertest = require('supertest')
 const { app, server } = require('../index')
 const api = supertest(app)
 const Blog = require('../models/blog')
+const User = require('../models/user')
+const { initialBlogs, format, blogsInDb, usersInDb } = require('./test_helper')
 
-const initialBlogs = [
-    {
-        _id: '5a422a851b54a676234d17f7',
-        title: 'React patterns',
-        author: 'Michael Chan',
-        url: 'https://reactpatterns.com/',
-        likes: 7,
-        __v: 0
-    },
-    {
-        _id: '5a422aa71b54a676234d17f8',
-        title: 'Go To Statement Considered Harmful',
-        author: 'Edsger W. Dijkstra',
-        url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html',
-        likes: 5,
-        __v: 0
-    },
-    {
-        _id: '5a422b3a1b54a676234d17f9',
-        title: 'Canonical string reduction',
-        author: 'Edsger W. Dijkstra',
-        url: 'http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html',
-        likes: 12,
-        __v: 0
-    },
-    {
-        _id: '5a422b891b54a676234d17fa',
-        title: 'First class tests',
-        author: 'Robert C. Martin',
-        url: 'http://blog.cleancoder.com/uncle-bob/2017/05/05/TestDefinitions.htmll',
-        likes: 10,
-        __v: 0
-    },
-    {
-        _id: '5a422ba71b54a676234d17fb',
-        title: 'TDD harms architecture',
-        author: 'Robert C. Martin',
-        url: 'http://blog.cleancoder.com/uncle-bob/2017/03/03/TDD-Harms-Architecture.html',
-        likes: 0,
-        __v: 0
-    },
-    {
-        _id: '5a422bc61b54a676234d17fc',
-        title: 'Type wars',
-        author: 'Robert C. Martin',
-        url: 'http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html',
-        likes: 2,
-        __v: 0
-    }
-]
 
 beforeAll(async () => {
     await Blog.remove({})
@@ -65,33 +17,30 @@ beforeAll(async () => {
 
 describe('Test get/api/blogs/', () => {
 
+
     test('blog list is returned as json', async () => {
-        await api
+        const blogsInDatabase = await blogsInDb()
+
+        const response = await api
             .get('/api/blogs')
             .expect(200)
             .expect('Content-Type', /application\/json/)
-    })
 
-    test('6 blogs in list', async () => {
-        const response = await api
-            .get('/api/blogs')
 
-        expect(response.body.length).toBe(6)
-    })
 
-    test('a specific author is within returned blogs', async () => {
-        const response = await api
-            .get('/api/blogs')
+        expect(response.body.length).toBe(blogsInDatabase.length)
 
-        const authors = response.body.map(blog => blog.author)
-
-        expect(authors).toContain('Michael Chan')
+        const returnedTitles = response.body.map(blog => blog.title)
+        blogsInDatabase.forEach(blog => {
+            expect(returnedTitles).toContain(blog.title)
+        })
     })
 })
 
 describe('Test post/api/blogs/', () => {
 
     test('a valid blog can be added', async () => {
+
         const newBlog = {
             title: 'Korean jääkiekkomaajoukkueblogi',
             author: 'Park Kim',
@@ -99,22 +48,130 @@ describe('Test post/api/blogs/', () => {
             likes: 0
         }
 
+        const blogsBefore = await blogsInDb()
+
+        const response = await api
+            .post('/api/blogs')
+            .send(newBlog)
+            .expect(200)
+            .expect('Content-Type', /application\/json/)
+
+        const blogsAfter = await blogsInDb()
+
+        expect(blogsAfter.length).toBe(blogsBefore.length + 1)
+        const titles = blogsAfter.map(blog => blog.title)
+        expect(titles).toContain(response.body.title)
+    })
+
+    test('when likes not given, value is zero', async () => {
+        const newBlog = {
+            title: 'Tykkääjät tykkää',
+            author: 'Like Liker',
+            url: 'www.il.fi'
+        }
+
         await api
             .post('/api/blogs')
             .send(newBlog)
-            .expect(201)
+            .expect(200)
             .expect('Content-Type', /application\/json/)
 
+        const blogsAfter = await blogsInDb()
 
-        const response = await api
-            .get('/api/blogs')
-
-        const titles = response.body.map(blog => blog.title)
-        expect(response.body.length).toBe(initialBlogs.length + 1)
-        expect(titles).toContain('Korean jääkiekkomaajoukkueblogi')
-
+        const lastBlog = blogsAfter[blogsAfter.length - 1]
+        expect(lastBlog.likes).toBe(0)
     })
+
+    test('when title and url undefined, status is 400', async () => {
+        const newBlog = {
+            author: 'Hovi Seppo',
+            likes: 10
+        }
+
+        const blogsBefore = await blogsInDb()
+
+        await api
+            .post('/api/blogs')
+            .send(newBlog)
+            .expect(400)
+
+        const blogsAfter = await blogsInDb()
+
+        expect(blogsAfter.length).toBe(blogsBefore.length)
+    })
+
 })
+
+
+describe('when there is initially one user at db', async () => {
+    beforeAll(async () => {
+        await User.remove({})
+        const user = new User({ username: 'root', password: 'sekret', adult: true })
+        await user.save()
+    })
+
+    test('POST /api/users succeeds with a fresh username', async () => {
+        const usersBeforeOperation = await usersInDb()
+
+        const newUser = {
+            username: 'jonnej',
+            name: 'Jonne J',
+            password: 'salainen'
+        }
+        await api
+            .post('/api/users')
+            .send(newUser)
+            .expect(200)
+            .expect('Content-Type', /application\/json/)
+
+        const usersAfterOperation = await usersInDb()
+        expect(usersAfterOperation.length).toBe(usersBeforeOperation.length + 1)
+        const usernames = usersAfterOperation.map(u => u.username)
+        expect(usernames).toContain(newUser.username)
+    })
+
+    test('POST /api/users fails with username already in database', async () => {
+        const usersBeforeOperation = await usersInDb()
+
+        const newUser = {
+            username: 'root',
+            name: 'Jonne J',
+            password: 'salainen'
+        }
+        const result = await api
+            .post('/api/users')
+            .send(newUser)
+            .expect(400)
+            .expect('Content-Type', /application\/json/)
+
+        const usersAfterOperation = await usersInDb()
+        expect(usersAfterOperation.length).toBe(usersBeforeOperation.length)
+
+        expect(result.body).toEqual(['Username already in database.'])
+    })
+
+    test('POST /api/users fails with password length less than 3', async () => {
+        const usersBeforeOperation = await usersInDb()
+
+        const newUser = {
+            username: 'jouju',
+            name: 'Jonne J',
+            password: 'sa'
+        }
+        const result = await api
+            .post('/api/users')
+            .send(newUser)
+            .expect(400)
+            .expect('Content-Type', /application\/json/)
+
+        const usersAfterOperation = await usersInDb()
+        expect(usersAfterOperation.length).toBe(usersBeforeOperation.length)
+
+        expect(result.body).toEqual(['Password must be atleast 3 characters.'])
+    })
+
+})
+
 afterAll(() => {
     server.close()
 })
