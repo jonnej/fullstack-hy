@@ -4,15 +4,16 @@ import AnecdoteForm from './components/AnecdoteForm'
 import AnecdoteList from './components/AnecdoteList'
 import Filter from './components/Filter'
 import { connect } from 'react-redux'
-import { showNotification, removeNotification } from './reducers/notificationReducer'
-import { createAnecdote, voteAnecdote } from './reducers/anecdoteReducer'
-import { changeFilter } from './reducers/filterReducer'
+import { anecdoteInitialization } from './reducers/anecdoteReducer'
+
 
 class App extends React.Component {
 
+  componentDidMount = async () => {
+    this.props.anecdoteInitialization()
+  }
+
   render() {
-    console.log(this.props)
-    // console.log(this.props.store.getState().notification)
     return (
       <div>
         <h1>Programming anecdotes</h1>
@@ -38,11 +39,7 @@ const mapStateToProps = (state) => {
 }
 
 const mapDispatchToProps = {
-  showNotification,
-  removeNotification,
-  createAnecdote,
-  voteAnecdote,
-  changeFilter
+  anecdoteInitialization
 }
 
 const ConnectedApp = connect(
