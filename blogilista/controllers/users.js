@@ -9,6 +9,20 @@ usersRouter.get('/', async (request, response) => {
     response.json(users.map(User.format))
 })
 
+usersRouter.get('/:id', (request, response) => {
+    User
+        .findById(request.params.id)
+        .then(user => {
+            if (user) {
+                response.json(user)
+            } else {
+                response.status(404).end()
+            }
+        }).catch(error => {
+            response.status(400).send({ error: 'malformed id' })
+        })
+})
+
 usersRouter.post('/', async (request, response) => {
     try {
         const body = request.body

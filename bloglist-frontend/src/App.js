@@ -6,6 +6,9 @@ import BlogForm from './components/BlogForm'
 import LoginForm from './components/LoginForm'
 import Togglable from './components/Togglable'
 import './index.css'
+import { BrowserRouter as Router, Route } from 'react-router-dom'
+import UserList from './components/UserList'
+import User from './components/User'
 
 class App extends React.Component {
   constructor(props) {
@@ -92,6 +95,7 @@ class App extends React.Component {
 
 
   render() {
+
     const showMessage = () => (
       <div className="message">
         {this.state.message}
@@ -104,31 +108,49 @@ class App extends React.Component {
       </div>
     )
 
-    const showBlogs = () => (
-      <div>
-        <h2>blogs</h2>
-        <p>{this.state.user.name} logged in <button onClick={this.logout}>Logout</button></p>
-        {this.state.blogs.map(blog =>
-          <Blog key={blog._id} blog={blog} handleLike={this.handleLike} handleDelete={this.handleDelete} currentUser={this.state.user} handleNotifications={this.handleNotifications} />
-        )}
-        <h3>Uusi blogi</h3>
-        <BlogForm addBlogToList={this.addBlogToList} handleNotifications={this.handleNotifications} />
-      </div>
+    const showLoggedInUser = () => (
+      <p>{this.state.user.name} logged in <button onClick={this.logout}>Logout</button></p>
     )
-    return (
-      <div>
-        {this.state.message !== null && showMessage()}
-        {this.state.error !== null && showError()}
 
-        {this.state.user === null &&
+    const showBlogsOrLogin = () => {
+      if (this.state.user === null) {
+        return (
           <Togglable buttonLabel="login">
             <LoginForm handleSubmit={this.login} handleLoginFieldChange={this.handleLoginFieldChange} username={this.state.username} password={this.state.password} />
-          </Togglable>}
-        {this.state.user !== null && showBlogs()}
+          </Togglable>
+        )
+      }
+
+      return (
+        <div>
+          <h2>Blogs</h2>
+          {this.state.blogs.map(blog =>
+            <Blog key={blog._id} blog={blog} handleLike={this.handleLike} handleDelete={this.handleDelete} currentUser={this.state.user} handleNotifications={this.handleNotifications} />
+          )}
+          <h3>Uusi blogi</h3>
+          <BlogForm addBlogToList={this.addBlogToList} handleNotifications={this.handleNotifications} />
+        </div>
+      )
+    }
+
+    return (
+      <div>
+        <Router>
+          <div>
+            <div>
+              {this.state.message !== null && showMessage()}
+              {this.state.error !== null && showError()}
+              {this.state.user !== null && showLoggedInUser()}
+            </div>
+            <Route exact path="/" render={() => showBlogsOrLogin()} />
+            <Route exact path="/users" render={() => <UserList />} />
+            <Route exact path="/users/:id" render={({ match }) => <User id={match.params.id} />} />
+          </div>
+        </Router>
       </div>
     )
   }
 }
 
 
-export default App;
+export default App

@@ -51,6 +51,7 @@ class Blog extends React.Component {
 
   render() {
 
+
     const deleteButton = () => (
       <div>
         <button onClick={this.deleteBlog}>Remove blog</button>
@@ -59,6 +60,7 @@ class Blog extends React.Component {
 
     return (
       <div>
+
         <Togglable buttonLabel={`${this.blog.title} ${this.blog.author}`}>
           <div>
             <p>{this.blog.title} {this.blog.author}</p>

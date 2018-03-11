@@ -1,21 +1,21 @@
 import React from 'react'
 
 class Togglable extends React.Component {
-    constructor(props) {
-      super(props)
-      this.state = {
-        visible: false
-      }
+  constructor(props) {
+    super(props)
+    this.state = {
+      visible: false
     }
-  
+  }
+
     toggleVisibility = () => {
-      this.setState({visible: !this.state.visible})
+      this.setState({ visible: !this.state.visible })
     }
-  
+
     render() {
       const hideWhenVisible = { display: this.state.visible ? 'none' : '' }
       const showWhenVisible = { display: this.state.visible ? '' : 'none' }
-  
+
       const blogStyle = {
         paddingTop: 10,
         paddingLeft: 2,
@@ -23,7 +23,7 @@ class Togglable extends React.Component {
         borderWidth: 1,
         marginBottom: 5
       }
-  
+
       return (
         <div style={blogStyle}>
           <div style={hideWhenVisible}>
@@ -36,6 +36,6 @@ class Togglable extends React.Component {
         </div>
       )
     }
-  }
+}
 
 export default Togglable
